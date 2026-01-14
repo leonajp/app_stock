@@ -1,0 +1,11 @@
+date,signal,reason,condition,entry_time,entry_stock_price,morning_open,drop_pct,exit_stock_price,stock_pnl_pct,expiration,strike,option_error,entry_option_price,exit_option_price,option_pnl_pct,option_pnl_dollar
+20251202,False,drop_too_small_0.2%,,,,,,,,,,,,,,
+20251203,True,,gap_+0.5%_pm_bullish,2025-12-03 09:39:00,645.0,654.87,1.5071693618580793,662.17,2.6620155038759625,2025-12-19,645.0,no_option_prices,,,,
+20251204,False,drop_too_small_0.4%,,,,,,,,,,,,,,
+20251205,False,drop_too_small_0.6%,,,,,,,,,,,,,,
+20251208,False,drop_too_small_0.6%,,,,,,,,,,,,,,
+20251209,False,drop_too_small_0.8%,,,,,,,,,,,,,,
+20251210,False,gap_down_-1.1%,,,,,,,,,,,,,,
+20251211,False,gap_down_-0.8%,,,,,,,,,,,,,,
+20251212,True,,gap_-0.4%,2025-12-12 10:09:00,689.009,714.28,3.5379683037464242,670.46,-2.6921273887568926,2025-12-19,690.0,,22.1,11.8,-46.60633484162896,-1030.0
+20251215,True,,gap_+1.7%,2025-12-15 10:03:00,661.5601,682.57,3.07805792812459,684.55,3.475103773640508,2025-12-19,662.5,,20.2,34.2,69.30693069306932,1400.0000000000005

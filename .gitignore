@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Streamlit secrets (contains API keys)
+.streamlit/secrets.toml
+
+# Environment
+.env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db

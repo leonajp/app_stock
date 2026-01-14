@@ -4471,31 +4471,31 @@ def page_backtest():
     if st.session_state.get('theta_enabled', False):
         st.markdown('<p class="section-header">🎯 Real Options Data (ThetaData)</p>', unsafe_allow_html=True)
         
-        theta_url = st.session_state.get('theta_url', 'http://127.0.0.1:25503')
-        
+        theta_url = st.session_state.get('theta_url', 'http://127.0.0.1:25510')
+
         st.markdown(f"""
         <div class="info-box">
         <strong>📡 ThetaData Connection:</strong> {theta_url}<br>
         Using real historical options prices and Greeks instead of simulated leverage.
         </div>
         """, unsafe_allow_html=True)
-        
+
         # Try to connect and fetch real data
         try:
             import requests
             from io import StringIO
-            
-            # Test connection
-            response = requests.get(f"{theta_url}/v3/stock/snapshot/quote", 
-                                   params={"symbol": symbol}, timeout=5)
-            
+
+            # Test connection with v2 API
+            response = requests.get(f"{theta_url}/v2/snapshot/stock/quote",
+                                   params={"root": symbol}, timeout=5)
+
             if response.status_code == 200:
                 st.success(f"✅ Connected to Theta Terminal - Fetching {symbol} options...")
-                
-                # Get option chain
+
+                # Get option chain with v2 API
                 chain_response = requests.get(
-                    f"{theta_url}/v3/option/snapshot/quote",
-                    params={"symbol": symbol, "expiration": "*"},
+                    f"{theta_url}/v2/snapshot/option/quote",
+                    params={"root": symbol},
                     timeout=30
                 )
                 
@@ -4537,7 +4537,7 @@ def page_backtest():
                                 
                                 # Fetch Greeks
                                 greeks_response = requests.get(
-                                    f"{theta_url}/v3/option/snapshot/greeks/all",
+                                    f"{theta_url}/v2/snapshot/option/greeks",
                                     params={
                                         "symbol": symbol,
                                         "expiration": str(nearest_exp),
@@ -5366,8 +5366,8 @@ def page_settings():
         with col_theta1:
             theta_url = st.text_input(
                 "Theta Terminal URL",
-                value=st.session_state.get('theta_url', 'http://127.0.0.1:25503'),
-                help="Default: http://127.0.0.1:25503 (v3) or :25510 (v2)"
+                value=st.session_state.get('theta_url', 'http://127.0.0.1:25510'),
+                help="Default: http://127.0.0.1:25510 (ThetaData REST API v2)"
             )
             st.session_state.theta_url = theta_url
             
@@ -5376,7 +5376,7 @@ def page_settings():
                 try:
                     import requests
                     # V3 uses different endpoints - test with stock snapshot
-                    response = requests.get(f"{theta_url}/v3/stock/snapshot/quote", 
+                    response = requests.get(f"{theta_url}/v2/snapshot/stock/quote", 
                                           params={"symbol": "AAPL"}, timeout=5)
                     if response.status_code == 200:
                         st.success("✅ Connected to Theta Terminal V3!")
@@ -5509,12 +5509,12 @@ class MorningDipBacktester:
         
         # Try to connect to ThetaData
         self.theta_available = False
-        self.theta_url = "http://127.0.0.1:25503"
+        self.theta_url = "http://127.0.0.1:25510"
         self.theta_error = None
         
         try:
             response = requests.get(
-                f"{self.theta_url}/v3/stock/snapshot/quote", 
+                f"{self.theta_url}/v2/snapshot/stock/quote", 
                 params={"symbol": "AAPL"}, 
                 timeout=5  # Increased timeout
             )
@@ -5761,7 +5761,7 @@ class MorningDipBacktester:
         try:
             from io import StringIO
             response = requests.get(
-                f"{self.theta_url}/v3/option/history/ohlc",
+                f"{self.theta_url}/v2/hist/option/ohlc",
                 params={
                     "symbol": symbol,
                     "expiration": expiration,
@@ -5824,7 +5824,7 @@ class MorningDipBacktester:
         try:
             from io import StringIO
             response = requests.get(
-                f"{self.theta_url}/v3/option/snapshot/quote",
+                f"{self.theta_url}/v2/snapshot/option/quote",
                 params={"symbol": symbol, "expiration": "*"},
                 timeout=30
             )
@@ -5845,7 +5845,7 @@ class MorningDipBacktester:
             
             # First try snapshot (for current expirations)
             response = requests.get(
-                f"{self.theta_url}/v3/option/snapshot/quote",
+                f"{self.theta_url}/v2/snapshot/option/quote",
                 params={"symbol": symbol, "expiration": expiration},
                 timeout=30
             )
@@ -5861,7 +5861,7 @@ class MorningDipBacktester:
             # by requesting option history - if it returns data, the expiration exists
             test_strike = 650  # Test with a likely strike
             response = requests.get(
-                f"{self.theta_url}/v3/option/history/ohlc",
+                f"{self.theta_url}/v2/hist/option/ohlc",
                 params={
                     "symbol": symbol,
                     "expiration": expiration,
@@ -6006,7 +6006,7 @@ class MorningDipBacktester:
                 for strike in sorted_strikes[:15]:  # Try up to 15 strikes per expiration
                     try:
                         response = requests.get(
-                            f"{self.theta_url}/v3/option/history/ohlc",
+                            f"{self.theta_url}/v2/hist/option/ohlc",
                             params={
                                 "symbol": symbol,
                                 "expiration": exp,
@@ -6173,7 +6173,7 @@ def page_morning_dip():
     theta_error = None
     try:
         response = requests.get(
-            "http://127.0.0.1:25503/v3/stock/snapshot/quote", 
+            "http://127.0.0.1:25510/v2/snapshot/stock/quote", 
             params={"symbol": "AAPL"}, 
             timeout=5  # Longer timeout
         )
@@ -6215,7 +6215,7 @@ def page_morning_dip():
         Dip % = (Morning Open - Morning Low) / Morning Open × 100
         ```
         
-        **Option Prices**: Requires ThetaData Terminal running on port 25503
+        **Option Prices**: Requires ThetaData Terminal running on port 25510
         """)
     
     # Run backtest
@@ -6242,7 +6242,7 @@ def page_morning_dip():
         else:
             error_msg = backtester.theta_error if hasattr(backtester, 'theta_error') and backtester.theta_error else "Unknown error"
             st.error(f"❌ ThetaData connection failed: {error_msg}")
-            st.info("💡 Make sure ThetaData Terminal is running on http://127.0.0.1:25503")
+            st.info("💡 Make sure ThetaData Terminal is running on http://127.0.0.1:25510")
         
         progress = st.progress(0)
         status = st.empty()
